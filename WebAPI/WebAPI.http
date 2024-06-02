@@ -1,0 +1,10 @@
+@WebAPI_HostAddress = http://localhost:5140
+
+GET {{WebAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
+
+POST {{WebAPI_HostAddress}}/signup/
+Accept: application/json
+Content-Type: application/jso
