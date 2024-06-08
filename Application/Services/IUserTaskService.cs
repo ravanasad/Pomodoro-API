@@ -12,5 +12,7 @@ public interface IUserTaskService
     Task<UserTaskDto> GetTaskById(int id, CancellationToken cancellationToken);
     Task<IEnumerable<UserTaskDto>> GetTasksByUserId(CancellationToken cancellationToken);
     Task<IReadOnlyDictionary<TaskPriority, IReadOnlyCollection<UserTaskDto>>> GetTasksByUserIdGroupByPriority(CancellationToken cancellationToken);
+
+    Task<List<UserTaskListDto>> GetTasksByUserIdGroupByPriorityList(CancellationToken cancellationToken);
 }
 

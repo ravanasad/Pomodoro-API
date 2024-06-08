@@ -4,6 +4,8 @@ using Application.Repositories;
 using Application.Services;
 using Domain.Enums;
 using System.Collections.Immutable;
+using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace Infrastructure.Services;
 
@@ -39,6 +41,27 @@ public sealed class UserTaskService(IUserTaskRepository UserTaskRepository, IUse
             .ToImmutableDictionary(group => group.Key, group => (IReadOnlyCollection<UserTaskDto>)group.ToList());
 
         return keyValuePairs;
+    }
+
+    public async Task<List<UserTaskListDto>> GetTasksByUserIdGroupByPriorityList(CancellationToken cancellationToken)
+    {
+        var userTasks = await GetTasksByUserId(cancellationToken);
+        int id = 0;
+        List<Tuple<TaskPriority, string, string>> tuples = [
+            new (TaskPriority.Must, "Must", "Red"),
+            new (TaskPriority.Should, "Should", "Blue"),
+            new (TaskPriority.Could, "Could", "Green"),
+            new (TaskPriority.Wont, "Wont", "Grey")
+            ];
+
+        var a = tuples.Aggregate(new List<UserTaskListDto>(), (acc, tuple) =>
+        {
+            var userTasksByPriority = userTasks.Where(userTask => userTask.TaskPriority == tuple.Item1).ToList();
+            acc.Add(new UserTaskListDto(id++, tuple.Item2, tuple.Item3, userTasksByPriority));
+            return acc;
+        });
+
+        return a;
     }
 
     public async Task CreateTask(CreateUserTaskDto task, CancellationToken cancellationToken)

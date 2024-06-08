@@ -29,7 +29,7 @@ public class UserTaskController(IUserTaskService userTaskService) : BaseControll
     [HttpGet("priority")]
     public async Task<IActionResult> GetByPriority(CancellationToken cancellationToken)
     {
-        var result = await userTaskService.GetTasksByUserIdGroupByPriority(cancellationToken);
+        var result = await userTaskService.GetTasksByUserIdGroupByPriorityList(cancellationToken);
         return Ok(result);
     }
 
