@@ -20,8 +20,8 @@ what is the MediatR notifications then implement them
 ### Third Stage
 ---
 - [ ] Create Result Response
-- [ ] Implement it to Services
-- [ ] 
+- [ ] Implement Result Response to Services
+- [ ] Use CQRS Pattern for all services
 - [ ] 
 - [ ] 
 ---
