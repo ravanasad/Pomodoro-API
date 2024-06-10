@@ -2,7 +2,7 @@ namespace Domain.Entities.Auth;
 
 public class AppUser : IdentityUser<Guid>
 {
-
+    public string PictureUrl { get; set; }
     public List<UserTask> UserTasks { get; set; } = [];
 
 

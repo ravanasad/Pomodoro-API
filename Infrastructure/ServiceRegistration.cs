@@ -1,11 +1,13 @@
 ﻿using Application.Configurations;
 using Application.Repositories;
 using Application.Services;
+using Application.Services.PhotoService;
 using Application.Services.TokenService;
 using Infrastructure.Configurations;
 using Infrastructure.Context;
 using Infrastructure.Repositories;
 using Infrastructure.Services;
+using Infrastructure.Services.PhotoService;
 using Infrastructure.Services.TokenService;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -84,6 +86,8 @@ public static class ServiceRegistration
         services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<IUserTaskService, UserTaskService>();
         services.AddScoped<IUserTaskRepository, UserTaskRepository>();
+        services.AddScoped<IUserService, UserService>();
+        services.AddScoped<ILocalPhotoService, LocalPhotoService>();
         services.AddScoped<IUserContext, UserContext>();
 
 
