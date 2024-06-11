@@ -10,6 +10,10 @@ public class LocalPhotoService(IWebHostEnvironment webHostEnvironment) : ILocalP
     public string UploadPhoto(IFormFile file, string path)
     {
         string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, path);
+        if (!Directory.Exists(uploadsFolder))
+        {
+            Directory.CreateDirectory(uploadsFolder);
+        }
         string uniqueFileName = Guid.NewGuid().ToString() + "_" + file.FileName;
         string filePath = Path.Combine(uploadsFolder, uniqueFileName);
         file.CopyTo(new FileStream(filePath, FileMode.Create));

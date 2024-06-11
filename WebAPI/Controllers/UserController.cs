@@ -5,9 +5,15 @@ using Microsoft.AspNetCore.Mvc;
 namespace WebAPI.Controllers;
 [Route("api/[controller]")]
 [ApiController]
-public class UserController(IUserService UserService) : ControllerBase
+public class UserController : BaseController
 {
-    private IUserService _userService { get; } = UserService;
+    private readonly IUserService _userService;
+
+    public UserController(IUserService userService)
+    {
+        _userService = userService;
+    }
+
 
     [HttpGet]
     public async Task<IActionResult> GetUsers()
