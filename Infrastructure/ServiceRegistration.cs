@@ -1,12 +1,10 @@
 ﻿using Application.Configurations;
-using Application.Repositories;
 using Application.Services;
 using Application.Services.AuthService;
 using Application.Services.PhotoService;
 using Application.Services.TokenService;
 using Infrastructure.Configurations;
 using Infrastructure.Context;
-using Infrastructure.Repositories;
 using Infrastructure.Services;
 using Infrastructure.Services.AuthService.Google;
 using Infrastructure.Services.PhotoService;
@@ -87,7 +85,6 @@ public static class ServiceRegistration
         services.AddHttpContextAccessor();
         services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<IUserTaskService, UserTaskService>();
-        services.AddScoped<IUserTaskRepository, UserTaskRepository>();
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<ILocalPhotoService, LocalPhotoService>();
         services.AddScoped<IUserContext, UserContext>();

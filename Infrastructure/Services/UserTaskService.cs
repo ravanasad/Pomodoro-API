@@ -1,22 +1,23 @@
 using Application.Configurations;
 using Application.DTOs;
-using Application.Repositories;
 using Application.Services;
 using Domain.Enums;
+using Infrastructure.Context;
+using Microsoft.EntityFrameworkCore;
 using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 
 namespace Infrastructure.Services;
 
-public sealed class UserTaskService(IUserTaskRepository UserTaskRepository, IUserContext context) : IUserTaskService
+public sealed class UserTaskService(AppDbContext DbContext, IUserContext context) : IUserTaskService
 {
-    private readonly IUserTaskRepository userTaskRepository = UserTaskRepository;
-
+    private readonly DbSet<UserTask> _context = DbContext.UserTasks;
     public async Task<UserTaskDto> GetTaskById(int id, CancellationToken cancellationToken)
     {
-        UserTask userTask = await userTaskRepository.GetByIdAsync(id, cancellationToken);
+        UserTask? userTask = await _context.FirstOrDefaultAsync(x => x.Id == id);
         if (userTask == null)
         {
             throw new Exception("Task not found");
@@ -30,8 +31,14 @@ public sealed class UserTaskService(IUserTaskRepository UserTaskRepository, IUse
 
     public async Task<IEnumerable<UserTaskDto>> GetTasksByUserId(CancellationToken cancellationToken)
     {
-        var userTasks = await userTaskRepository.GetWhereAsync(x=>x.AppUserId == context.UserId, cancellationToken);
-        return userTasks.Select(userTask => new UserTaskDto(userTask.Id, userTask.Title, userTask.Description, userTask.Label, userTask.DueDate, userTask.Priority, userTask.IsCompleted));
+        var userTasks = await _context.Where(x => x.AppUserId == context.UserId).ToListAsync();
+        return userTasks.Select(userTask => new UserTaskDto(userTask.Id,
+                                                            userTask.Title,
+                                                            userTask.Description,
+                                                            userTask.Label,
+                                                            userTask.DueDate,
+                                                            userTask.Priority,
+                                                            userTask.IsCompleted));
     }
 
     public async Task<IReadOnlyDictionary<TaskPriority, IReadOnlyCollection<UserTaskDto>>> GetTasksByUserIdGroupByPriority(CancellationToken cancellationToken)
@@ -47,21 +54,54 @@ public sealed class UserTaskService(IUserTaskRepository UserTaskRepository, IUse
     public async Task<UserTaskPriorityDto> GetTasksByUserIdGroupByPriorityList(CancellationToken cancellationToken)
     {
         IEnumerable<UserTaskDto> userTasks = await GetTasksByUserId(cancellationToken);
-        int id = 0;
-        List<Tuple<TaskPriority, string, string>> tuples = [
-            new (TaskPriority.Must, "Must", "Red"),
-            new (TaskPriority.Should, "Should", "Blue"),
-            new (TaskPriority.Could, "Could", "Green"),
-            new (TaskPriority.Wont, "Wont", "Grey")
-            ];
-        int total = userTasks.Count();
-        int completed = userTasks.Count(x => x.IsCompleted);
-        List<UserTaskListDto> tasks = tuples.Aggregate(new List<UserTaskListDto>(), (acc, tuple) =>
+
+        #region Method 1
+        //int id = 0;
+        //List<Tuple<TaskPriority, string, string>> tuples = [
+        //    new (TaskPriority.Must, "Must", "Red"),
+        //    new (TaskPriority.Should, "Should", "Blue"),
+        //    new (TaskPriority.Could, "Could", "Green"),
+        //    new (TaskPriority.Wont, "Wont", "Grey")
+        //    ];
+        //int total = userTasks.Count();
+        //int completed = userTasks.Count(x => x.IsCompleted);
+        //List<UserTaskListDto> tasks = tuples.Aggregate(new List<UserTaskListDto>(), (acc, tuple) =>
+        //{
+        //    var userTasksByPriority = userTasks.Where(userTask => userTask.TaskPriority == tuple.Item1).ToList();
+        //    acc.Add(new UserTaskListDto(id++, tuple.Item2, tuple.Item3, userTasksByPriority));
+        //    return acc;
+        //});
+        #endregion
+
+        #region Method 2
+
+        List<UserTaskListDto> tasks = new()
         {
-            var userTasksByPriority = userTasks.Where(userTask => userTask.TaskPriority == tuple.Item1).ToList();
-            acc.Add(new UserTaskListDto(id++, tuple.Item2, tuple.Item3, userTasksByPriority));
-            return acc;
-        });
+            new UserTaskListDto(0, "Must", "Red", []),
+            new UserTaskListDto(1, "Should", "Blue", []),
+            new UserTaskListDto(2, "Could", "Green", []),
+            new UserTaskListDto(3, "Would", "Grey", [])
+
+        };
+        Dictionary<TaskPriority, UserTaskListDto> taskDict = new()
+        {
+            { TaskPriority.Must, tasks[0] },
+            { TaskPriority.Should, tasks[1] },
+            { TaskPriority.Could, tasks[2] },
+            { TaskPriority.Wont, tasks[3] }
+        };
+        int total = 0, completed = 0;
+        foreach (UserTaskDto task in userTasks)
+        {
+            total++;
+            if (task.IsCompleted)
+            {
+                completed++;
+            }
+            taskDict[task.TaskPriority].items.Add(task);
+        }
+
+        #endregion
 
         return new(total, total - completed, completed, tasks);
     }
@@ -78,8 +118,8 @@ public sealed class UserTaskService(IUserTaskRepository UserTaskRepository, IUse
             Priority = task.TaskPriority,
             IsCompleted = task.IsCompleted
         };
-        await userTaskRepository.CreateAsync(userTask, cancellationToken);
-        int a = await userTaskRepository.SaveChangesAsync(cancellationToken);
+        await _context.AddAsync(userTask, cancellationToken);
+        _ = await DbContext.SaveChangesAsync(cancellationToken);
     }
 
     public async Task UpdateTask(UpdateUserTaskDto task, CancellationToken cancellationToken)
@@ -95,12 +135,12 @@ public sealed class UserTaskService(IUserTaskRepository UserTaskRepository, IUse
             IsCompleted = task.IsCompleted,
             AppUserId = context.UserId
         };
-        await userTaskRepository.UpdateAsync(userTask, cancellationToken);
-        await userTaskRepository.SaveChangesAsync(cancellationToken);
+        _context.Update(userTask);
+        await DbContext.SaveChangesAsync(cancellationToken);
     }
     public async Task DeleteTask(int id, CancellationToken cancellationToken)
     {
-        UserTask userTask = await userTaskRepository.GetByIdAsync(id, cancellationToken);
+        UserTask? userTask = await _context.FirstOrDefaultAsync(x => x.Id == id);
         if (userTask == null)
         {
             throw new Exception("Task not found");
@@ -109,8 +149,8 @@ public sealed class UserTaskService(IUserTaskRepository UserTaskRepository, IUse
         {
             throw new Exception("Unauthorized access to task");
         }
-        userTaskRepository.Delete(userTask, cancellationToken);
-        await userTaskRepository.SaveChangesAsync(cancellationToken);
+        _context.Remove(userTask);
+        await DbContext.SaveChangesAsync(cancellationToken);
     }
 }
 
