@@ -1,19 +1,20 @@
 ﻿using Application.Configurations;
 using Application.Repositories;
 using Application.Services;
+using Application.Services.AuthService;
 using Application.Services.PhotoService;
 using Application.Services.TokenService;
 using Infrastructure.Configurations;
 using Infrastructure.Context;
 using Infrastructure.Repositories;
 using Infrastructure.Services;
+using Infrastructure.Services.AuthService.Google;
 using Infrastructure.Services.PhotoService;
 using Infrastructure.Services.TokenService;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-
 namespace Infrastructure;
 
 public static class ServiceRegistration
@@ -55,7 +56,8 @@ public static class ServiceRegistration
         {
             opt.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
             opt.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-        }).AddJwtBearer(JwtBearerDefaults.AuthenticationScheme,
+        })
+            .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme,
             opt =>
             {
                 opt.SaveToken = true;
@@ -89,7 +91,7 @@ public static class ServiceRegistration
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<ILocalPhotoService, LocalPhotoService>();
         services.AddScoped<IUserContext, UserContext>();
-
+        services.AddScoped<IAuthService, GoogleService>();
 
         return services;
     }
