@@ -31,7 +31,7 @@ public sealed class UserTaskService(AppDbContext DbContext, IUserContext context
 
     public async Task<IEnumerable<UserTaskDto>> GetTasksByUserId(CancellationToken cancellationToken)
     {
-        var userTasks = await _context.Where(x => x.AppUserId == context.UserId).ToListAsync();
+        var userTasks = await _context.AsNoTracking().Where(x => x.AppUserId == context.UserId).ToListAsync();
         return userTasks.Select(userTask => new UserTaskDto(userTask.Id,
                                                             userTask.Title,
                                                             userTask.Description,
@@ -40,16 +40,18 @@ public sealed class UserTaskService(AppDbContext DbContext, IUserContext context
                                                             userTask.Priority,
                                                             userTask.IsCompleted));
     }
+    #region Previous Method 1
+    //public async Task<IReadOnlyDictionary<TaskPriority, IReadOnlyCollection<UserTaskDto>>> GetTasksByUserIdGroupByPriority(CancellationToken cancellationToken)
+    //{
+    //    var userTasks = await GetTasksByUserId(cancellationToken);
+    //    IReadOnlyDictionary<TaskPriority, IReadOnlyCollection<UserTaskDto>> keyValuePairs = userTasks
+    //        .GroupBy(userTask => userTask.TaskPriority)
+    //        .ToImmutableDictionary(group => group.Key, group => (IReadOnlyCollection<UserTaskDto>)group.ToList());
 
-    public async Task<IReadOnlyDictionary<TaskPriority, IReadOnlyCollection<UserTaskDto>>> GetTasksByUserIdGroupByPriority(CancellationToken cancellationToken)
-    {
-        var userTasks = await GetTasksByUserId(cancellationToken);
-        IReadOnlyDictionary<TaskPriority, IReadOnlyCollection<UserTaskDto>> keyValuePairs = userTasks
-            .GroupBy(userTask => userTask.TaskPriority)
-            .ToImmutableDictionary(group => group.Key, group => (IReadOnlyCollection<UserTaskDto>)group.ToList());
+    //    return keyValuePairs;
+    //}
+    #endregion
 
-        return keyValuePairs;
-    }
 
     public async Task<UserTaskPriorityDto> GetTasksByUserIdGroupByPriorityList(CancellationToken cancellationToken)
     {
