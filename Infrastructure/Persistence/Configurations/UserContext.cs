@@ -1,6 +1,6 @@
 ﻿using Application.Configurations;
 
-namespace Infrastructure.Configurations;
+namespace Infrastructure.Persistence.Configurations;
 
 public sealed class UserContext(IHttpContextAccessor httpContextAccessor) : IUserContext
 {

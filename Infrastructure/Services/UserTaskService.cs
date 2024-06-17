@@ -2,13 +2,8 @@ using Application.Configurations;
 using Application.DTOs;
 using Application.Services;
 using Domain.Enums;
-using Infrastructure.Context;
+using Infrastructure.Persistence.Context;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Immutable;
-using System.ComponentModel;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text.RegularExpressions;
 
 namespace Infrastructure.Services;
 
@@ -50,6 +45,20 @@ public sealed class UserTaskService(AppDbContext DbContext, IUserContext context
 
     //    return keyValuePairs;
     //}
+    /*
+     "Could":
+    {
+        ...
+    },
+    "Could":
+    {
+        ...
+    },
+    "Could":
+    {
+        ...
+    }
+     */
     #endregion
 
 
@@ -82,7 +91,7 @@ public sealed class UserTaskService(AppDbContext DbContext, IUserContext context
             new UserTaskListDto(0, "Must", "Red", []),
             new UserTaskListDto(1, "Should", "Blue", []),
             new UserTaskListDto(2, "Could", "Green", []),
-            new UserTaskListDto(3, "Would", "Grey", [])
+            new UserTaskListDto(3, "Won't", "Grey", [])
 
         };
         Dictionary<TaskPriority, UserTaskListDto> taskDict = new()
