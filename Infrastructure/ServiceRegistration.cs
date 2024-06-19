@@ -1,14 +1,12 @@
 ﻿using Application.Configurations;
 using Application.Services;
-using Application.Services.AuthService.Google;
-using Application.Services.AuthService.Local;
+using Application.Services.AuthService;
 using Application.Services.PhotoService;
 using Application.Services.TokenService;
 using Infrastructure.Persistence.Configurations;
 using Infrastructure.Persistence.Context;
 using Infrastructure.Services;
 using Infrastructure.Services.AuthService.Google;
-using Infrastructure.Services.AuthService.Local;
 using Infrastructure.Services.PhotoService;
 using Infrastructure.Services.TokenService;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -87,11 +85,10 @@ public static class ServiceRegistration
         services.AddHttpContextAccessor();
         services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<IUserTaskService, UserTaskService>();
-        services.AddScoped<ILocalAuthService, LocalAuthService>();
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<ILocalPhotoService, LocalPhotoService>();
         services.AddScoped<IUserContext, UserContext>();
-        services.AddScoped<IGoogleAuthService, GoogleAuthService>();
+        services.AddScoped<IAuthService, GoogleService>();
 
         return services;
     }

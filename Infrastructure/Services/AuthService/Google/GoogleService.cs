@@ -1,17 +1,17 @@
-using Application.Services.AuthService.Google;
+using Application.Services.AuthService;
 using Application.Services.TokenService;
 using Google.Apis.Auth;
 using Microsoft.Extensions.Configuration;
 
 namespace Infrastructure.Services.AuthService.Google;
 
-public class GoogleAuthService : IGoogleAuthService
+public class GoogleService : IAuthService
 {
     private readonly UserManager<AppUser> _userManager;
     private readonly IConfiguration _configuration;
     private readonly ITokenService _tokenService;
 
-    public GoogleAuthService(UserManager<AppUser> userManager, IConfiguration configuration, ITokenService tokenService)
+    public GoogleService(UserManager<AppUser> userManager, IConfiguration configuration, ITokenService tokenService)
     {
         _userManager = userManager;
         _configuration = configuration;

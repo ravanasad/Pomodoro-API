@@ -1,6 +1,6 @@
-namespace Application.Services.AuthService.Google;
+namespace Application.Services.AuthService;
 
-public interface IGoogleAuthService
+public interface IAuthService
 {
     Task AuthenticateAsync(GoogleAuthenticateDto request);
 }
