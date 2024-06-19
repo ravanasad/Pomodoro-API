@@ -1,11 +1,11 @@
-﻿using Application.Services.AuthService;
+﻿using Application.Services.AuthService.Google;
 using MediatR;
 
 namespace Application.Features.Auths.Commands.GoogleLoginCommand;
 
-public sealed class GoogleLoginCommandHandler(IAuthService authService) : IRequestHandler<GoogleLoginCommand>
+public sealed class GoogleLoginCommandHandler(IGoogleAuthService authService) : IRequestHandler<GoogleLoginCommand>
 {
-    public IAuthService AuthService { get; } = authService;
+    public IGoogleAuthService AuthService { get; } = authService;
 
     public async Task Handle(GoogleLoginCommand request, CancellationToken cancellationToken)
     {

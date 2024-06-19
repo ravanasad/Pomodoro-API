@@ -1,35 +1,15 @@
-using Domain.Entities.Auth;
-using Domain.Exceptions.Auth;
+using Application.Services.AuthService.Local;
 using MediatR;
-using Microsoft.AspNetCore.Identity;
 
 namespace Application.Features.Auths.Commands.RegisterCommand;
 
-public sealed class RegisterCommandHandler(UserManager<AppUser> userManager) : IRequestHandler<RegisterCommand, Result>
+public sealed class RegisterCommandHandler(ILocalAuthService localAuthService) : IRequestHandler<RegisterCommand, Result>
 {
-    private UserManager<AppUser> UserManager { get; } = userManager;
+    private ILocalAuthService LocalAuthService { get; } = localAuthService;
 
     public async Task<Result> Handle(RegisterCommand request, CancellationToken cancellationToken)
     {
-        var user = await userManager.FindByEmailAsync(request.Email) ?? 
-                   await userManager.FindByNameAsync(request.UserName);
-
-        if (user != null)
-        {
-            return Result.Failure("User already exists.");
-        }
-
-        IdentityResult result = await userManager.CreateAsync(new()
-        {
-            UserName = request.UserName,
-            Email = request.Email
-        }, request.Password);
-
-        if (!result.Succeeded)
-        {
-            return Result.Failure(result.Errors.Select(x => x.Description).ToList());
-        }
-        return Result.Success();
+        return await LocalAuthService.RegisterAsync(new(request.Username, request.Email, request.Password));
     }
 }
 
