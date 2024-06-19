@@ -5,15 +5,19 @@ using Microsoft.AspNetCore.Identity;
 
 namespace Application.Features.Auths.Commands.RegisterCommand;
 
-public sealed class RegisterCommandHandler(UserManager<AppUser> userManager) : IRequestHandler<RegisterCommand>
+public sealed class RegisterCommandHandler(UserManager<AppUser> userManager) : IRequestHandler<RegisterCommand, Result>
 {
-    public async Task Handle(RegisterCommand request, CancellationToken cancellationToken)
+    private UserManager<AppUser> UserManager { get; } = userManager;
+
+    public async Task<Result> Handle(RegisterCommand request, CancellationToken cancellationToken)
     {
-        var user = await userManager.FindByEmailAsync(request.Email)
-            ?? await userManager.FindByNameAsync(request.UserName);
+        var user = await userManager.FindByEmailAsync(request.Email) ?? 
+                   await userManager.FindByNameAsync(request.UserName);
 
         if (user != null)
-            throw new UserAlreadyExpcetion();
+        {
+            return Result.Failure("User already exists.");
+        }
 
         IdentityResult result = await userManager.CreateAsync(new()
         {
@@ -23,10 +27,9 @@ public sealed class RegisterCommandHandler(UserManager<AppUser> userManager) : I
 
         if (!result.Succeeded)
         {
-            string errors = string.Join(", ", result.Errors.Select(x => x.Description));
-            throw new RegisterExceptions(errors);
+            return Result.Failure(result.Errors.Select(x => x.Description).ToList());
         }
-
+        return Result.Success();
     }
 }
 

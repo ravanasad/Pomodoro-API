@@ -1,32 +1,35 @@
 using Application.Services.TokenService;
 using Domain.Entities.Auth;
-using Domain.Exceptions.Auth;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 
 namespace Application.Features.Auths.Commands.LoginCommand;
 
 public sealed class LoginCommandHandler(UserManager<AppUser> userManager,
-                                        ITokenService tokenService) : IRequestHandler<LoginCommand>
+                                        ITokenService tokenService) : IRequestHandler<LoginCommand, Result>
 {
-    public async Task Handle(LoginCommand request, CancellationToken cancellationToken)
+    private UserManager<AppUser> UserManager { get; } = userManager;
+    private ITokenService TokenService { get; } = tokenService;
+
+    public async Task<Result> Handle(LoginCommand request, CancellationToken cancellationToken)
     {
-        var user = await userManager.FindByEmailAsync(request.EmailOrUsername) ?? await userManager.FindByNameAsync(request.EmailOrUsername);
+        var user = await UserManager.FindByEmailAsync(request.EmailOrUsername) ?? await UserManager.FindByNameAsync(request.EmailOrUsername);
 
         if (user == null)
         {
-            throw new UserNotFoundException();
+            return Result.Failure("Invalid username or password.");
         }
 
-        var result = await userManager.CheckPasswordAsync(user, request.Password);
+        var result = await UserManager.CheckPasswordAsync(user, request.Password);
 
         if (!result)
         {
-            throw new InvalidPasswordException();
+            return Result.Failure("Invalid username or password.");
         }
 
-        var roles = await userManager.GetRolesAsync(user);
-        await tokenService.GenerateToken(user, roles);
+        var roles = await UserManager.GetRolesAsync(user);
+        await TokenService.GenerateToken(user, roles);
+        return Result.Success();
     }
 }
 

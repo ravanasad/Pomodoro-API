@@ -11,15 +11,13 @@ public class AuthController : BaseController
     [HttpPost("signup")]
     public async Task<IActionResult> Register(RegisterCommand request)
     {
-        await Mediator.Send(request);
-        return Ok("User Registered Successfully");
+        return Ok(await Mediator.Send(request));
     }
 
     [HttpPost("signin")]
     public async Task<IActionResult> Login(LoginCommand request)
     {
-        await Mediator.Send(request);
-        return Ok("User Logined Successfully");
+        return Ok(await Mediator.Send(request));
     }
 
     [HttpGet]
