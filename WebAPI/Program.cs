@@ -2,10 +2,8 @@ using Application;
 using Infrastructure;
 using Infrastructure.Persistence.Context;
 using Microsoft.EntityFrameworkCore;
-using System.Net;
 
 var builder = WebApplication.CreateBuilder(args);
-
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -13,15 +11,6 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services
     .AddInfrastructureServices(builder.Configuration)
     .AddApplicationServices();
-
-builder.WebHost.ConfigureKestrel((context, serverOptions) =>
-{
-    serverOptions.Listen(IPAddress.Loopback, 8000);
-    serverOptions.Listen(IPAddress.Loopback, 8001, listenOptions =>
-    {
-        listenOptions.UseHttps("aspnetcore.pfx", "testPassword");
-    });
-});
 
 builder.Services.AddCors(options =>
 {
