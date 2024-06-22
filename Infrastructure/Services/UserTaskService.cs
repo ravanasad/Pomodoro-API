@@ -1,127 +1,76 @@
-using Application.Configurations;
-using Application.DTOs;
-using Application.Services;
-using Domain.Enums;
 using Infrastructure.Persistence.Context;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Services;
 
-public sealed class UserTaskService(AppDbContext DbContext, IUserContext context) : IUserTaskService
+public sealed class UserTaskService(AppDbContext dbContext, IUserContext context) : IUserTaskService
 {
-    private readonly DbSet<UserTask> _context = DbContext.UserTasks;
-    public async Task<UserTaskDto> GetTaskById(int id, CancellationToken cancellationToken)
+    private readonly DbSet<UserTask> _userTasks = dbContext.UserTasks;
+    private readonly AppDbContext _dbContext = dbContext;
+    private readonly IUserContext _userContext = context;
+
+    public async Task<Result<UserTaskDto>> GetTaskById(int id, CancellationToken cancellationToken)
     {
-        UserTask? userTask = await _context.FirstOrDefaultAsync(x => x.Id == id);
+        UserTask? userTask = await _userTasks.FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
         if (userTask == null)
         {
-            throw new Exception("Task not found");
+            return Result<UserTaskDto>.Failure(Error.NotFound(UserTaskErrors.UserTaskNotFound));
         }
-        if (userTask.AppUserId != context.UserId)
+        if (userTask.AppUserId != _userContext.UserId)
         {
-            throw new Exception("Unauthorized access to task");
+            return Result<UserTaskDto>.Failure(Error.InvalidRequest(UserTaskErrors.UnauthorizedAccess));
         }
-        return new UserTaskDto(userTask.Id, userTask.Title, userTask.Description, userTask.Label, userTask.DueDate, userTask.Priority, userTask.IsCompleted);
+        return Result<UserTaskDto>.Success(new UserTaskDto(userTask.Id, userTask.Title, userTask.Description, userTask.Label, userTask.DueDate, userTask.Priority, userTask.IsCompleted));
     }
 
-    public async Task<IEnumerable<UserTaskDto>> GetTasksByUserId(CancellationToken cancellationToken)
+    public async Task<Result<IEnumerable<UserTaskDto>>> GetTasksByUserId(CancellationToken cancellationToken)
     {
-        var userTasks = await _context.AsNoTracking().Where(x => x.AppUserId == context.UserId).ToListAsync();
-        return userTasks.Select(userTask => new UserTaskDto(userTask.Id,
-                                                            userTask.Title,
-                                                            userTask.Description,
-                                                            userTask.Label,
-                                                            userTask.DueDate,
-                                                            userTask.Priority,
-                                                            userTask.IsCompleted));
+        var userTasks = await _userTasks.AsNoTracking().Where(x => x.AppUserId == _userContext.UserId).ToListAsync(cancellationToken);
+        var userTaskDtos = userTasks.Select(userTask => new UserTaskDto(userTask.Id, userTask.Title, userTask.Description, userTask.Label, userTask.DueDate, userTask.Priority, userTask.IsCompleted));
+        return Result<IEnumerable<UserTaskDto>>.Success(userTaskDtos);
     }
-    #region Previous Method 1
-    //public async Task<IReadOnlyDictionary<TaskPriority, IReadOnlyCollection<UserTaskDto>>> GetTasksByUserIdGroupByPriority(CancellationToken cancellationToken)
-    //{
-    //    var userTasks = await GetTasksByUserId(cancellationToken);
-    //    IReadOnlyDictionary<TaskPriority, IReadOnlyCollection<UserTaskDto>> keyValuePairs = userTasks
-    //        .GroupBy(userTask => userTask.TaskPriority)
-    //        .ToImmutableDictionary(group => group.Key, group => (IReadOnlyCollection<UserTaskDto>)group.ToList());
 
-    //    return keyValuePairs;
-    //}
-    /*
-     "Could":
+    public async Task<Result<UserTaskPriorityDto>> GetTasksByUserIdGroupByPriorityList(CancellationToken cancellationToken)
     {
-        ...
-    },
-    "Could":
-    {
-        ...
-    },
-    "Could":
-    {
-        ...
-    }
-     */
-    #endregion
-
-
-    public async Task<UserTaskPriorityDto> GetTasksByUserIdGroupByPriorityList(CancellationToken cancellationToken)
-    {
-        IEnumerable<UserTaskDto> userTasks = await GetTasksByUserId(cancellationToken);
-
-        #region Method 1
-        //int id = 0;
-        //List<Tuple<TaskPriority, string, string>> tuples = [
-        //    new (TaskPriority.Must, "Must", "Red"),
-        //    new (TaskPriority.Should, "Should", "Blue"),
-        //    new (TaskPriority.Could, "Could", "Green"),
-        //    new (TaskPriority.Wont, "Wont", "Grey")
-        //    ];
-        //int total = userTasks.Count();
-        //int completed = userTasks.Count(x => x.IsCompleted);
-        //List<UserTaskListDto> tasks = tuples.Aggregate(new List<UserTaskListDto>(), (acc, tuple) =>
-        //{
-        //    var userTasksByPriority = userTasks.Where(userTask => userTask.TaskPriority == tuple.Item1).ToList();
-        //    acc.Add(new UserTaskListDto(id++, tuple.Item2, tuple.Item3, userTasksByPriority));
-        //    return acc;
-        //});
-        #endregion
-
-        #region Method 2
-
-        List<UserTaskListDto> tasks = new()
+        Result<IEnumerable<UserTaskDto>> userTasksResult = await GetTasksByUserId(cancellationToken);
+        if (userTasksResult.IsFailure)
         {
-            new UserTaskListDto(0, "Must", "Red", []),
-            new UserTaskListDto(1, "Should", "Blue", []),
-            new UserTaskListDto(2, "Could", "Green", []),
-            new UserTaskListDto(3, "Won't", "Grey", [])
+            return Result<UserTaskPriorityDto>.Failure(userTasksResult.Error);
+        }
 
+        var userTasks = userTasksResult.Value.ToList();
+        var tasks = new List<UserTaskListDto>
+        {
+            new(0,  "Must",   "Red",   []),
+            new(1,  "Should", "Blue",  []),
+            new(2,  "Could",  "Green", []),
+            new(3,  "Won't",  "Grey",  [])
         };
-        Dictionary<TaskPriority, UserTaskListDto> taskDict = new()
+
+        var taskDict = new Dictionary<TaskPriority, UserTaskListDto>
         {
-            { TaskPriority.Must, tasks[0] },
+            { TaskPriority.Must,   tasks[0] },
             { TaskPriority.Should, tasks[1] },
-            { TaskPriority.Could, tasks[2] },
-            { TaskPriority.Wont, tasks[3] }
+            { TaskPriority.Could,  tasks[2] },
+            { TaskPriority.Wont,   tasks[3] }
         };
-        int total = 0, completed = 0;
-        foreach (UserTaskDto task in userTasks)
+
+        int total = userTasks.Count;
+        int completed = userTasks.Count(x => x.IsCompleted);
+
+        foreach (var task in userTasks)
         {
-            total++;
-            if (task.IsCompleted)
-            {
-                completed++;
-            }
             taskDict[task.TaskPriority].items.Add(task);
         }
 
-        #endregion
-
-        return new(total, total - completed, completed, tasks);
+        return Result<UserTaskPriorityDto>.Success(new UserTaskPriorityDto(total, total - completed, completed, tasks));
     }
 
-    public async Task CreateTask(CreateUserTaskDto task, CancellationToken cancellationToken)
+    public async Task<Result> CreateTask(CreateUserTaskDto task, CancellationToken cancellationToken)
     {
-        UserTask userTask = new UserTask()
+        var userTask = new UserTask
         {
-            AppUserId = context.UserId,
+            AppUserId = _userContext.UserId,
             Title = task.Title,
             Description = task.Description,
             Label = task.Label,
@@ -129,39 +78,54 @@ public sealed class UserTaskService(AppDbContext DbContext, IUserContext context
             Priority = task.TaskPriority,
             IsCompleted = task.IsCompleted
         };
-        await _context.AddAsync(userTask, cancellationToken);
-        _ = await DbContext.SaveChangesAsync(cancellationToken);
+
+        await _userTasks.AddAsync(userTask, cancellationToken);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+
+        return Result.Success();
     }
 
-    public async Task UpdateTask(UpdateUserTaskDto task, CancellationToken cancellationToken)
+    public async Task<Result> UpdateTask(UpdateUserTaskDto task, CancellationToken cancellationToken)
     {
-        UserTask userTask = new UserTask()
-        {
-            Id = task.Id,
-            Title = task.Title,
-            Description = task.Description,
-            Label = task.Label,
-            DueDate = task.DueDate,
-            Priority = task.TaskPriority,
-            IsCompleted = task.IsCompleted,
-            AppUserId = context.UserId
-        };
-        _context.Update(userTask);
-        await DbContext.SaveChangesAsync(cancellationToken);
-    }
-    public async Task DeleteTask(int id, CancellationToken cancellationToken)
-    {
-        UserTask? userTask = await _context.FirstOrDefaultAsync(x => x.Id == id);
+        var userTask = await _userTasks.FirstOrDefaultAsync(x => x.Id == task.Id, cancellationToken);
         if (userTask == null)
         {
-            throw new Exception("Task not found");
+            return Result.Failure(Error.NotFound(UserTaskErrors.UserTaskNotFound));
         }
-        if (userTask.AppUserId != context.UserId)
+        if (userTask.AppUserId != _userContext.UserId)
         {
-            throw new Exception("Unauthorized access to task");
+            return Result.Failure(Error.InvalidRequest(UserTaskErrors.UnauthorizedAccess));
         }
-        _context.Remove(userTask);
-        await DbContext.SaveChangesAsync(cancellationToken);
-    }
-}
 
+        userTask.Title = task.Title;
+        userTask.Description = task.Description;
+        userTask.Label = task.Label;
+        userTask.DueDate = task.DueDate;
+        userTask.Priority = task.TaskPriority;
+        userTask.IsCompleted = task.IsCompleted;
+
+        _userTasks.Update(userTask);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+
+        return Result.Success();
+    }
+
+    public async Task<Result> DeleteTask(int id, CancellationToken cancellationToken)
+    {
+        var userTask = await _userTasks.FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+        if (userTask == null)
+        {
+            return Result.Failure(Error.NotFound(UserTaskErrors.UserTaskNotFound));
+        }
+        if (userTask.AppUserId != _userContext.UserId)
+        {
+            return Result.Failure(Error.InvalidRequest(UserTaskErrors.UnauthorizedAccess));
+        }
+
+        _userTasks.Remove(userTask);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+
+        return Result.Success();
+    }
+
+}

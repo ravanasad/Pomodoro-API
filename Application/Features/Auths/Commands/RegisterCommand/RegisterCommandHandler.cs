@@ -9,7 +9,7 @@ public sealed class RegisterCommandHandler(ILocalAuthService localAuthService) :
 
     public async Task<Result> Handle(RegisterCommand request, CancellationToken cancellationToken)
     {
-        return await LocalAuthService.RegisterAsync(new(request.Username, request.Email, request.Password));
+        return await LocalAuthService.RegisterAsync(new(request.Email, request.Username, request.Password));
     }
 }
 

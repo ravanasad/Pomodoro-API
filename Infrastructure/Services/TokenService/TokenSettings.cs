@@ -6,5 +6,5 @@ public sealed class TokenSetting
     public string Issuer { get; set; }
     public string Secret { get; set; }
     public int Expiration { get; set; }
-    public string CokkieName { get; set; }
+    public string CookieName { get; set; }
 }

@@ -5,9 +5,8 @@ namespace Application.Services.TokenService;
 
 public interface ITokenService
 {
-    Task GenerateToken(AppUser user, IList<string> roles);
-    string GenerateRefreshToken();
-    ClaimsPrincipal GetPrincipalFromExpiredToken(string token);
-    string GenerateTokenFromRefreshToken(string refreshToken);
+    Task<Result> GenerateToken(AppUser user, IList<string> roles);
+    Result<string> GenerateRefreshToken();
+    Result<ClaimsPrincipal> GetPrincipalFromExpiredToken(string token);
+    Task<Result<string>> GenerateTokenFromRefreshToken(string refreshToken);
 }
-

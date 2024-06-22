@@ -11,13 +11,23 @@ public class AuthController : BaseController
     [HttpPost("signup")]
     public async Task<IActionResult> Register(RegisterCommand request)
     {
-        return Ok(await Mediator.Send(request));
+        var result = await Mediator.Send(request);
+        if (result.IsFailure)
+        {
+            return BadRequest(result.Error);
+        }
+        return Ok();
     }
 
     [HttpPost("signin")]
     public async Task<IActionResult> Login(LoginCommand request)
     {
-        return Ok(await Mediator.Send(request));
+        var result = await Mediator.Send(request);
+        if (result.IsFailure)
+        {
+            return BadRequest(result.Error);
+        }
+        return Ok();
     }
 
     [HttpGet]

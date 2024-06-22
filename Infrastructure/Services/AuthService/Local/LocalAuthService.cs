@@ -1,5 +1,3 @@
-using Application.DTOs;
-using Application.DTOs.Common;
 using Application.Services.AuthService.Local;
 using Application.Services.TokenService;
 
@@ -17,14 +15,14 @@ public sealed class LocalAuthService(UserManager<AppUser> userManager,
 
         if (user == null)
         {
-            return Result.Failure("Invalid username or password.");
+            return Result.Failure(Error.BadRequest(AuthErrors.CredentialsError));
         }
 
         var result = await userManager.CheckPasswordAsync(user, request.Password);
 
         if (!result)
         {
-            return Result.Failure("Invalid username or password.");
+            return Result.Failure(Error.BadRequest(AuthErrors.CredentialsError));
         }
 
         var roles = await userManager.GetRolesAsync(user);
@@ -39,7 +37,7 @@ public sealed class LocalAuthService(UserManager<AppUser> userManager,
 
         if (user != null)
         {
-            return Result.Failure("User already exists.");
+            return Result.Failure(Error.BadRequest(AuthErrors.UserAlreadyExists));
         }
 
         IdentityResult result = await userManager.CreateAsync(new()
@@ -50,7 +48,7 @@ public sealed class LocalAuthService(UserManager<AppUser> userManager,
 
         if (!result.Succeeded)
         {
-            return Result.Failure(result.Errors.Select(x => x.Description).ToList());
+            return Result.Failure(Error.BadRequest(new("One or more errors happened.", string.Join(",", result.Errors))));
         }
         return Result.Success();
     }

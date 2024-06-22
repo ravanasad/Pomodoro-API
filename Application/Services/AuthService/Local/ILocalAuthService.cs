@@ -1,5 +1,3 @@
-using Application.DTOs;
-
 namespace Application.Services.AuthService.Local;
 
 public interface ILocalAuthService

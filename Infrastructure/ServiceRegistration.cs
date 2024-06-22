@@ -49,7 +49,7 @@ public static class ServiceRegistration
             opt.Audience = configuration["TokenSettings:Audience"]!;
             opt.Secret = configuration["TokenSettings:Secret"]!;
             opt.Expiration = int.Parse(configuration["TokenSettings:Expiration"]!);
-            opt.CokkieName = configuration["TokenSettings:CookieName"]!;
+            opt.CookieName = configuration["TokenSettings:CookieName"]!;
         });
 
         services.AddAuthentication(opt =>
