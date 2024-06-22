@@ -9,6 +9,8 @@ namespace WebAPI.Controllers;
 public class AuthController : BaseController
 {
     [HttpPost("signup")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Register(RegisterCommand request)
     {
         var result = await Mediator.Send(request);
@@ -20,6 +22,8 @@ public class AuthController : BaseController
     }
 
     [HttpPost("signin")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Login(LoginCommand request)
     {
         var result = await Mediator.Send(request);
