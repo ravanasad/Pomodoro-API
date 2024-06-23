@@ -1,5 +1,6 @@
 using Infrastructure.Persistence.Context;
 using Microsoft.EntityFrameworkCore;
+using System.Runtime.CompilerServices;
 
 namespace Infrastructure.Services;
 
@@ -11,7 +12,7 @@ public sealed class UserTaskService(AppDbContext dbContext, IUserContext context
 
     public async Task<Result<UserTaskDto>> GetTaskById(int id, CancellationToken cancellationToken)
     {
-        UserTask? userTask = await _userTasks.FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+        UserTask? userTask = await _userTasks.AsNoTracking().Include(x => x.ExtendTasks).FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
         if (userTask == null)
         {
             return Result<UserTaskDto>.Failure(Error.NotFound(UserTaskErrors.UserTaskNotFound));
@@ -29,7 +30,9 @@ public sealed class UserTaskService(AppDbContext dbContext, IUserContext context
         var userTaskDtos = userTasks.Select(userTask => MapToUserTaskDto(userTask)).ToList();
         return Result<IEnumerable<UserTaskDto>>.Success(userTaskDtos);
     }
-    private UserTaskDto MapToUserTaskDto(UserTask userTask)
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static UserTaskDto MapToUserTaskDto(UserTask userTask)
     {
         return new UserTaskDto(
             userTask.Id,
