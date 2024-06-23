@@ -19,11 +19,11 @@ what is the MediatR notifications then implement them
 ---
 ### Third Stage
 ---
-- [ ] Create Result Response
-- [ ] Implement Result Response to Services
+- [X] Create Result Response
+- [X] Implement Result Response to Services
 - [ ] Use CQRS Pattern for all services
-- [ ] 
-- [ ] 
+- [ ] Grafana integrated for monitoring
+- [ ] Logging with Serilog
 ---
 
 

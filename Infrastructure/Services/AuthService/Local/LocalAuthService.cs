@@ -6,7 +6,7 @@ namespace Infrastructure.Services.AuthService.Local;
 public sealed class LocalAuthService(UserManager<AppUser> userManager,
                                      ITokenService tokenService) : ILocalAuthService
 {
-    private ITokenService TokenService { get; } = tokenService;
+    private ITokenService TokenService = tokenService;
 
     public async Task<Result> LoginAsync(LoginDto request)
     {
@@ -26,7 +26,11 @@ public sealed class LocalAuthService(UserManager<AppUser> userManager,
         }
 
         var roles = await userManager.GetRolesAsync(user);
-        await TokenService.GenerateToken(user, roles);
+        var tokenResult = await TokenService.GenerateToken(user, roles);
+        if (tokenResult.IsFailure)
+        {
+            return Result.Failure(tokenResult.Error);
+        }
         return Result.Success();
     }
 

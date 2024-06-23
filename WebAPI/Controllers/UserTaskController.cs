@@ -1,4 +1,5 @@
 ﻿using Application.DTOs;
+using Application.DTOs.Result;
 using Application.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -13,12 +14,11 @@ public class UserTaskController(IUserTaskService userTaskService) : BaseControll
     private readonly IUserTaskService userTaskService = userTaskService;
 
     [HttpGet]
-
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesDefaultResponseType(typeof(IEnumerable<UserTaskDto>))]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
     {
-        var result = await userTaskService.GetTasksByUserId(cancellationToken);
+        Result<IEnumerable<UserTaskDto>> result = await userTaskService.GetTasksByUserId(cancellationToken);
         return Ok(result.Value);
     }
 
