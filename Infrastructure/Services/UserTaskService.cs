@@ -20,14 +20,27 @@ public sealed class UserTaskService(AppDbContext dbContext, IUserContext context
         {
             return Result<UserTaskDto>.Failure(Error.InvalidRequest(UserTaskErrors.UnauthorizedAccess));
         }
-        return Result<UserTaskDto>.Success(new UserTaskDto(userTask.Id, userTask.Title, userTask.Description, userTask.Label, userTask.DueDate, userTask.Priority, userTask.IsCompleted));
+        return Result<UserTaskDto>.Success(MapToUserTaskDto(userTask));
     }
 
     public async Task<Result<IEnumerable<UserTaskDto>>> GetTasksByUserId(CancellationToken cancellationToken)
     {
-        var userTasks = await _userTasks.AsNoTracking().Where(x => x.AppUserId == _userContext.UserId).ToListAsync(cancellationToken);
-        var userTaskDtos = userTasks.Select(userTask => new UserTaskDto(userTask.Id, userTask.Title, userTask.Description, userTask.Label, userTask.DueDate, userTask.Priority, userTask.IsCompleted));
+        var userTasks = await _userTasks.AsNoTracking().Include(x=>x.ExtendTasks).Where(x => x.AppUserId == _userContext.UserId).ToListAsync(cancellationToken);
+        var userTaskDtos = userTasks.Select(userTask => MapToUserTaskDto(userTask)).ToList();
         return Result<IEnumerable<UserTaskDto>>.Success(userTaskDtos);
+    }
+    private UserTaskDto MapToUserTaskDto(UserTask userTask)
+    {
+        return new UserTaskDto(
+            userTask.Id,
+            userTask.Title,
+            userTask.Description,
+            userTask.Label,
+            userTask.DueDate,
+            userTask.Priority,
+            userTask.IsCompleted,
+            userTask.ExtendTasks?.Select(extendTask => MapToUserTaskDto(extendTask)).ToList() ?? []
+        );
     }
 
     public async Task<Result<UserTaskPriorityDto>> GetTasksByUserIdGroupByPriorityList(CancellationToken cancellationToken)
@@ -82,6 +95,28 @@ public sealed class UserTaskService(AppDbContext dbContext, IUserContext context
         await _userTasks.AddAsync(userTask, cancellationToken);
         await _dbContext.SaveChangesAsync(cancellationToken);
 
+        return Result.Success();
+    }
+
+    public async Task<Result> CreateTaskForTask(int taskId, CreateUserTaskDto task, CancellationToken cancellationToken)
+    {
+        UserTask? userTask = await _userTasks.FirstOrDefaultAsync(x => x.Id == taskId, cancellationToken);
+        if (userTask == null)
+        {
+            return Result.Failure(Error.NotFound(UserTaskErrors.UserTaskNotFound));
+        }
+        var extendTask = new UserTask
+        {
+            AppUserId = _userContext.UserId,
+            Title = task.Title,
+            Description = task.Description,
+            Label = task.Label,
+            DueDate = task.DueDate,
+            Priority = task.TaskPriority,
+            IsCompleted = task.IsCompleted
+        };
+        userTask.ExtendTasks.Add(extendTask);
+        await _dbContext.SaveChangesAsync(cancellationToken);
         return Result.Success();
     }
 

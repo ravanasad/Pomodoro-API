@@ -63,6 +63,19 @@ public class UserTaskController(IUserTaskService userTaskService) : BaseControll
         return Created();
     }
 
+    [HttpPost("{taskId:int}")]
+    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> PostTaskForTask([FromRoute] int taskId, [FromBody] CreateUserTaskDto userTaskDto, CancellationToken cancellationToken)
+    {
+        var result = await userTaskService.CreateTaskForTask(taskId, userTaskDto, cancellationToken);
+        if (result.IsFailure)
+        {
+            return BadRequest(result.Error);
+        }
+        return Created();
+    }
+
     [HttpPut]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

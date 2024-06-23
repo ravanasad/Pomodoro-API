@@ -3,6 +3,7 @@ namespace Application.Services;
 public interface IUserTaskService
 {
     Task<Result> CreateTask(CreateUserTaskDto task, CancellationToken cancellationToken);
+    Task<Result> CreateTaskForTask(int taskId, CreateUserTaskDto task, CancellationToken cancellationToken);
 
     Task<Result> UpdateTask(UpdateUserTaskDto task, CancellationToken cancellationToken);
 

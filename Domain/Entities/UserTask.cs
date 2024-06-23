@@ -8,7 +8,7 @@ public sealed class UserTask : BaseEntity
     public DateTime DueDate { get; set; }
     public bool IsCompleted { get; set; } = false;
     public TaskPriority Priority { get; set; } = TaskPriority.Wont;
-
+    public List<UserTask> ExtendTasks { get; set; } = [];
     public Guid AppUserId { get; set; }
     public AppUser AppUser { get; set; }
 }
