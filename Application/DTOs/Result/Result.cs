@@ -10,6 +10,7 @@ public record struct Error(HttpStatusCode StatusCode, string Title, string Desc)
     public static Error NotFound(ErrorDesc desc) => new Error(HttpStatusCode.NotFound, desc.Title, desc.Desc);
     public static Error BadRequest(ErrorDesc desc) => new Error(HttpStatusCode.BadRequest, desc.Title, desc.Desc);
     public static Error InvalidRequest(ErrorDesc desc) => new Error(HttpStatusCode.Forbidden, desc.Title, desc.Desc);
+    public static Error Custom(HttpStatusCode statusCode, ErrorDesc desc) => new Error(statusCode, desc.Title, desc.Desc);
     public static Error None => new Error(HttpStatusCode.OK, string.Empty, string.Empty);
 };
 

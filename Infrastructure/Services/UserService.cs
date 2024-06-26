@@ -1,5 +1,3 @@
-using Application.DTOs;
-using Application.Services;
 using Application.Services.PhotoService;
 using Microsoft.EntityFrameworkCore;
 

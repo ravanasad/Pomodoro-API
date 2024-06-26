@@ -87,6 +87,7 @@ public static class ServiceRegistration
         services.AddHttpContextAccessor();
         services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<IUserTaskService, UserTaskService>();
+        services.AddScoped<ITaskStepService, TaskStepService>();
         services.AddScoped<ILocalAuthService, LocalAuthService>();
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<ILocalPhotoService, LocalPhotoService>();

@@ -12,7 +12,7 @@ public sealed class UserTaskService(AppDbContext dbContext, IUserContext context
 
     public async Task<Result<UserTaskDto>> GetTaskById(int id, CancellationToken cancellationToken)
     {
-        UserTask? userTask = await _userTasks.AsNoTracking().Include(x => x.ExtendTasks).FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+        UserTask? userTask = await _userTasks.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
         if (userTask == null)
         {
             return Result<UserTaskDto>.Failure(Error.NotFound(UserTaskErrors.UserTaskNotFound));
@@ -26,7 +26,7 @@ public sealed class UserTaskService(AppDbContext dbContext, IUserContext context
 
     public async Task<Result<IEnumerable<UserTaskDto>>> GetTasksByUserId(CancellationToken cancellationToken)
     {
-        var userTasks = await _userTasks.AsNoTracking().Include(x=>x.ExtendTasks).Where(x => x.AppUserId == _userContext.UserId).ToListAsync(cancellationToken);
+        var userTasks = await _userTasks.AsNoTracking().Where(x => x.AppUserId == _userContext.UserId).ToListAsync(cancellationToken);
         var userTaskDtos = userTasks.Select(userTask => MapToUserTaskDto(userTask)).ToList();
         return Result<IEnumerable<UserTaskDto>>.Success(userTaskDtos);
     }
@@ -41,8 +41,7 @@ public sealed class UserTaskService(AppDbContext dbContext, IUserContext context
             userTask.Label,
             userTask.DueDate,
             userTask.Priority,
-            userTask.IsCompleted,
-            userTask.ExtendTasks?.Select(extendTask => MapToUserTaskDto(extendTask)).ToList() ?? []
+            userTask.IsCompleted
         );
     }
 
@@ -118,7 +117,6 @@ public sealed class UserTaskService(AppDbContext dbContext, IUserContext context
             Priority = task.TaskPriority,
             IsCompleted = task.IsCompleted
         };
-        userTask.ExtendTasks.Add(extendTask);
         await _dbContext.SaveChangesAsync(cancellationToken);
         return Result.Success();
     }

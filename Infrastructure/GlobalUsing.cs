@@ -15,3 +15,4 @@ global using Domain.Enums;
 global using Domain.Errors;
 global using Application.DTOs.Result;
 global using Application.DTOs.Errors;
+global using System.Net;

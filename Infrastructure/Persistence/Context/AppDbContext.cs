@@ -10,6 +10,7 @@ public class AppDbContext : IdentityDbContext<AppUser, AppRole, Guid>
     }
 
     public DbSet<UserTask> UserTasks { get; set; }
+    public DbSet<TaskStep> TaskSteps { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
