@@ -1,5 +1,6 @@
 ﻿using Application.DTOs;
 using Application.DTOs.Result;
+using Application.Features.UserTasks.Commands.UserTaskCreate;
 using Application.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -53,9 +54,9 @@ public class UserTaskController(IUserTaskService userTaskService) : BaseControll
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> Post([FromBody] CreateUserTaskDto userTaskDto, CancellationToken cancellationToken)
+    public async Task<IActionResult> Post([FromBody] UserTaskCreateCommand userTaskDto, CancellationToken cancellationToken)
     {
-        var result = await userTaskService.CreateTask(userTaskDto, cancellationToken);
+        var result = await Mediator.Send(userTaskDto, cancellationToken);
         if (result.IsFailure)
         {
             return BadRequest(result.Error);
