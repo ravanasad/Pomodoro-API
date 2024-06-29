@@ -3,7 +3,7 @@ using Application.DTOs.Result;
 using Application.Features.UserTasks.Commands.UserTaskCreate;
 using Application.Features.UserTasks.Commands.UserTaskDelete;
 using Application.Features.UserTasks.Commands.UserTaskUpdate;
-using Application.Features.UserTasks.Queries;
+using Application.Features.UserTasks.Queries.GetAllUserTask;
 using Application.Features.UserTasks.Queries.GetByIdUserTask;
 using Application.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -93,5 +93,4 @@ public class UserTaskController(IUserTaskService userTaskService) : BaseControll
         }
         return Ok("Task deleted successfully");
     }
-
 }

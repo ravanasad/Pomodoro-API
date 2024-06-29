@@ -1,9 +1,9 @@
 ﻿using Application.Services;
 using MediatR;
 
-namespace Application.Features.UserTasks.Queries;
+namespace Application.Features.UserTasks.Queries.GetAllUserTask;
 
-public sealed class  GetAllUserTaskQueryHandler(IUserTaskService UserTaskService) : IRequestHandler<GetAllUserTaskQuery, Result<IEnumerable<UserTaskDto>>>
+public sealed class GetAllUserTaskQueryHandler(IUserTaskService UserTaskService) : IRequestHandler<GetAllUserTaskQuery, Result<IEnumerable<UserTaskDto>>>
 {
     private readonly IUserTaskService userTaskService = UserTaskService;
 
