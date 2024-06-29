@@ -58,7 +58,7 @@ public class UserTaskController(IUserTaskService userTaskService) : BaseControll
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> Post([FromBody] UserTaskCreateCommand request, CancellationToken cancellationToken)
+    public async Task<IActionResult> Post([FromBody] CreateUserTaskCommand request, CancellationToken cancellationToken)
     {
         var result = await Mediator.Send(request, cancellationToken);
         if (result.IsFailure)
@@ -71,7 +71,7 @@ public class UserTaskController(IUserTaskService userTaskService) : BaseControll
     [HttpPut]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> Put([FromBody] UserTaskUpdateCommand request, CancellationToken cancellationToken)
+    public async Task<IActionResult> Put([FromBody] UpdateUserTaskCommand request, CancellationToken cancellationToken)
     {
         var result = await Mediator.Send(request, cancellationToken);
         if (result.IsFailure)
@@ -86,7 +86,7 @@ public class UserTaskController(IUserTaskService userTaskService) : BaseControll
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
     {
-        var result = await Mediator.Send(new UserTaskDeleteCommand(id), cancellationToken);
+        var result = await Mediator.Send(new DeleteUserTaskCommand(id), cancellationToken);
         if (result.IsFailure)
         {
             return NotFound(result.Error);
