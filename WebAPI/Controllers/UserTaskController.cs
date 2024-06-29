@@ -1,6 +1,10 @@
 ﻿using Application.DTOs;
 using Application.DTOs.Result;
 using Application.Features.UserTasks.Commands.UserTaskCreate;
+using Application.Features.UserTasks.Commands.UserTaskDelete;
+using Application.Features.UserTasks.Commands.UserTaskUpdate;
+using Application.Features.UserTasks.Queries;
+using Application.Features.UserTasks.Queries.GetByIdUserTask;
 using Application.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -19,7 +23,7 @@ public class UserTaskController(IUserTaskService userTaskService) : BaseControll
     [ProducesDefaultResponseType(typeof(IEnumerable<UserTaskDto>))]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
     {
-        Result<IEnumerable<UserTaskDto>> result = await userTaskService.GetTasksByUserId(cancellationToken);
+        Result<IEnumerable<UserTaskDto>> result = await Mediator.Send(new GetAllUserTaskQuery(), cancellationToken);
         return Ok(result.Value);
     }
 
@@ -29,7 +33,7 @@ public class UserTaskController(IUserTaskService userTaskService) : BaseControll
     [ProducesDefaultResponseType(typeof(UserTaskDto))]
     public async Task<IActionResult> GetByid(int id, CancellationToken cancellationToken)
     {
-        var result = await userTaskService.GetTaskById(id, cancellationToken);
+        var result = await Mediator.Send(new GetByIdUserTaskQuery(id), cancellationToken);
         if (result.IsFailure)
         {
             return NotFound(result.Error);
@@ -54,22 +58,9 @@ public class UserTaskController(IUserTaskService userTaskService) : BaseControll
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> Post([FromBody] UserTaskCreateCommand userTaskDto, CancellationToken cancellationToken)
+    public async Task<IActionResult> Post([FromBody] UserTaskCreateCommand request, CancellationToken cancellationToken)
     {
-        var result = await Mediator.Send(userTaskDto, cancellationToken);
-        if (result.IsFailure)
-        {
-            return BadRequest(result.Error);
-        }
-        return Created();
-    }
-
-    [HttpPost("{taskId:int}")]
-    [ProducesResponseType(StatusCodes.Status201Created)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> PostTaskForTask([FromRoute] int taskId, [FromBody] CreateUserTaskDto userTaskDto, CancellationToken cancellationToken)
-    {
-        var result = await userTaskService.CreateTaskForTask(taskId, userTaskDto, cancellationToken);
+        var result = await Mediator.Send(request, cancellationToken);
         if (result.IsFailure)
         {
             return BadRequest(result.Error);
@@ -80,9 +71,9 @@ public class UserTaskController(IUserTaskService userTaskService) : BaseControll
     [HttpPut]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> Put([FromBody] UpdateUserTaskDto userTaskDto, CancellationToken cancellationToken)
+    public async Task<IActionResult> Put([FromBody] UserTaskUpdateCommand request, CancellationToken cancellationToken)
     {
-        var result = await userTaskService.UpdateTask(userTaskDto, cancellationToken);
+        var result = await Mediator.Send(request, cancellationToken);
         if (result.IsFailure)
         {
             return BadRequest(result.Error);
@@ -95,7 +86,7 @@ public class UserTaskController(IUserTaskService userTaskService) : BaseControll
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
     {
-        var result = await userTaskService.DeleteTask(id, cancellationToken);
+        var result = await Mediator.Send(new UserTaskDeleteCommand(id), cancellationToken);
         if (result.IsFailure)
         {
             return NotFound(result.Error);

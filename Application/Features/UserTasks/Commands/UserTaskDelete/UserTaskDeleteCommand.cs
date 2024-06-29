@@ -2,7 +2,4 @@
 
 namespace Application.Features.UserTasks.Commands.UserTaskDelete;
 
-public sealed class UserTaskDeleteCommand : IRequest<Result>
-{
-    public int Id { get; set; }
-}
+public sealed record UserTaskDeleteCommand(int Id) : IRequest<Result>;
