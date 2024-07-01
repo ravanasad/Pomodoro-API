@@ -1,6 +1,4 @@
-﻿using Application.DTOs.Result;
-using MediatR;
-using Microsoft.AspNetCore.Mvc;
+﻿using MediatR;
 
 namespace WebAPI.Controllers;
 

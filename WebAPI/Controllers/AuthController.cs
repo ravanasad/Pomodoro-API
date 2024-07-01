@@ -1,6 +1,5 @@
 ﻿using Application.Features.Auths.Commands.LoginCommand;
 using Application.Features.Auths.Commands.RegisterCommand;
-using Microsoft.AspNetCore.Mvc;
 
 namespace WebAPI.Controllers;
 

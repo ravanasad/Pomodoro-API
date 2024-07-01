@@ -1,14 +1,10 @@
-﻿using Application.DTOs;
-using Application.DTOs.Result;
-using Application.Features.UserTasks.Commands.UserTaskCreate;
+﻿using Application.Features.UserTasks.Commands.UserTaskCreate;
 using Application.Features.UserTasks.Commands.UserTaskDelete;
 using Application.Features.UserTasks.Commands.UserTaskUpdate;
 using Application.Features.UserTasks.Queries.GetAllUserTask;
 using Application.Features.UserTasks.Queries.GetByIdUserTask;
-using Application.Services;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+using Application.Features.UserTasks.Queries.GetGroupByPriorityUserTask;
+
 
 namespace WebAPI.Controllers;
 [Route("[controller]")]
@@ -47,7 +43,7 @@ public class UserTaskController(IUserTaskService userTaskService) : BaseControll
     [ProducesDefaultResponseType(typeof(IEnumerable<UserTaskDto>))]
     public async Task<IActionResult> GetByPriority(CancellationToken cancellationToken)
     {
-        var result = await userTaskService.GetTasksByUserIdGroupByPriorityList(cancellationToken);
+        var result = await Mediator.Send(new GetGroupByPriorityUserTaskQuery(), cancellationToken);
         if (result.IsFailure) 
         {
             return NotFound(result.Error);

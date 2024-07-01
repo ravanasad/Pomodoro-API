@@ -1,8 +1,4 @@
-﻿using Application.DTOs;
-using Application.Services;
-using Microsoft.AspNetCore.Mvc;
-
-namespace WebAPI.Controllers;
+﻿namespace WebAPI.Controllers;
 
 [Route("[controller]")]
 [ApiController]

@@ -1,7 +1,4 @@
-﻿using Application.Services;
-using Microsoft.AspNetCore.Mvc;
-
-namespace WebAPI.Controllers;
+﻿namespace WebAPI.Controllers;
 [Route("api/[controller]")]
 [ApiController]
 public class UserController : BaseController
