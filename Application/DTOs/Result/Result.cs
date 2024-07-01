@@ -24,9 +24,14 @@ public struct Result
     public Result(bool isSuccess, Error error)
     {
         if (isSuccess && error != Error.None)
+        {
             throw new InvalidOperationException("Success result cannot have an error.");
+        }
+
         if (!isSuccess && error == Error.None)
+        {
             throw new InvalidOperationException("Failure result must have an error.");
+        }
 
         IsSuccess = isSuccess;
         Error = error;
@@ -57,7 +62,10 @@ public struct Result<T>
         get
         {
             if (!IsSuccess)
+            {
                 throw new InvalidOperationException("Cannot access value of a failed result.");
+            }
+
             return _value;
         }
     }
